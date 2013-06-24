@@ -1,0 +1,38 @@
+srcdir = @srcdir@
+
+NASM = @NASM@
+NASMFLAGS = -f elf -O1 -w+orphan-labels
+CXX = @CXX@
+CPPFLAGS = @DEFS@ -I.
+CXXFLAGS = -Wall -pipe -O2
+LDFLAGS =
+OBJS = ArbInt.o Complex.o FFT.o StringMini.o URR32.o softurr32.o
+
+.cc.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $(srcdir)/$<
+
+all: demo
+
+softurr32.o: softurr32.h softurr32.asm
+	$(NASM) $(NASMFLAGS) -o softurr32.o softurr32.asm
+
+demo: demo.o $(OBJS)
+	$(CXX) $(LDFLAGS) -o demo demo.o $(OBJS)
+
+clean:
+	rm -f demo *.o *~ *.core core
+	rm -f config.cache config.log
+
+distclean: clean
+	rm -f Makefile config.h
+	rm -f config.status
+
+depend:
+	$(CXX) $(CPPFLAGS) $(CFLAGS) -MM *.cc > .depend
+
+ArbInt.o: ArbInt.cc ArbInt.h
+Complex.o: Complex.cc Complex.h URR32.h String.h StringMini.h softurr32.h
+FFT.o: FFT.cc FFT.h Complex.h URR32.h String.h StringMini.h softurr32.h
+StringMini.o: StringMini.cc StringMini.h
+URR32.o: URR32.cc ArbInt.h String.h StringMini.h URR32.h softurr32.h
+demo.o: demo.cc FFT.h Complex.h URR32.h String.h StringMini.h softurr32.h
